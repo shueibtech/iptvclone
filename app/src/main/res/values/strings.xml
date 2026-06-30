@@ -2,4 +2,7 @@
     <string name="app_name">Iptv Clone</string>
     <string name="splash_made_by">Made by</string>
     <string name="splash_brand">ShueibTech</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_reels">Reels</string>
+    <string name="nav_settings">Settings</string>
 </resources>

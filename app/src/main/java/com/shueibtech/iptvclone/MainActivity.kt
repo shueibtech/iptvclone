@@ -31,11 +31,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.shueibtech.iptvclone.ui.MainScreen
 import com.shueibtech.iptvclone.ui.theme.Accent
 import com.shueibtech.iptvclone.ui.theme.IptvCloneTheme
 import kotlinx.coroutines.delay
@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
                     if (showSplash) {
                         SplashScreen(onFinished = { showSplash = false })
                     } else {
-                        HelloWorld()
+                        MainScreen()
                     }
                 }
             }
@@ -131,27 +131,5 @@ fun SplashScreen(onFinished: () -> Unit) {
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-@Composable
-fun HelloWorld() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = "Hello World",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HelloWorldPreview() {
-    IptvCloneTheme {
-        HelloWorld()
     }
 }
