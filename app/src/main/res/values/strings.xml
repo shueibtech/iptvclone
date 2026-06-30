@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Iptv Clone</string>
+    <string name="splash_made_by">Made by</string>
+    <string name="splash_brand">ShueibTech</string>
 </resources>
