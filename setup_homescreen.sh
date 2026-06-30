@@ -1,3 +1,48 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+if [ ! -f "app/build.gradle.kts" ]; then
+  echo "شغل السكربت من داخل مجلد iptvclone"
+  exit 1
+fi
+
+PKG_DIR="app/src/main/java/com/shueibtech/iptvclone"
+
+cat > "app/src/main/res/values/strings.xml" << 'EOF'
+<resources>
+    <string name="app_name">Iptv Clone</string>
+    <string name="splash_made_by">Made by</string>
+    <string name="splash_brand">ShueibTech</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_reels">Reels</string>
+    <string name="nav_settings">Settings</string>
+    <string name="group_bein">beIN Sports</string>
+    <string name="group_alkass">Alkass</string>
+    <string name="group_alrabiaa">Al Rabia</string>
+    <string name="group_themanyah">Thmanyah</string>
+    <string name="home_subtitle">Live channels</string>
+    <string name="channel_number">%1$s %2$d</string>
+</resources>
+EOF
+
+cat > "app/src/main/res/values-ar/strings.xml" << 'EOF'
+<resources>
+    <string name="app_name">Iptv Clone</string>
+    <string name="splash_made_by">صنع بواسطة</string>
+    <string name="splash_brand">ShueibTech</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_reels">ريلز</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="group_bein">بي إن سبورت</string>
+    <string name="group_alkass">الكأس</string>
+    <string name="group_alrabiaa">الرابعة</string>
+    <string name="group_themanyah">ثمانية</string>
+    <string name="home_subtitle">البث المباشر</string>
+    <string name="channel_number">%1$s %2$d</string>
+</resources>
+EOF
+
+cat > "$PKG_DIR/ui/screens/HomeScreen.kt" << 'EOF'
 package com.shueibtech.iptvclone.ui.screens
 
 import androidx.compose.foundation.BorderStroke
@@ -192,3 +237,6 @@ private fun ChannelCard(group: ChannelGroup, index: Int) {
         }
     }
 }
+EOF
+
+echo "تم. شغل: ./gradlew assembleDebug"
