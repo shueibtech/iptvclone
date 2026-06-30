@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,6 +24,7 @@ import com.shueibtech.iptvclone.ui.screens.SettingsScreen
 @Composable
 fun MainScreen() {
     var selected by remember { mutableStateOf(NavDestination.Home) }
+    val favorites = remember { mutableStateListOf<String>() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedContent(
@@ -34,7 +36,7 @@ fun MainScreen() {
             modifier = Modifier.fillMaxSize()
         ) { destination ->
             when (destination) {
-                NavDestination.Home -> HomeScreen()
+                NavDestination.Home -> HomeScreen(favorites = favorites)
                 NavDestination.Reels -> ReelsScreen()
                 NavDestination.Settings -> SettingsScreen()
             }

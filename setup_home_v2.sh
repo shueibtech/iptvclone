@@ -1,3 +1,112 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -e
+
+if [ ! -f "app/build.gradle.kts" ]; then
+  echo "شغل السكربت من داخل مجلد iptvclone"
+  exit 1
+fi
+
+PKG_DIR="app/src/main/java/com/shueibtech/iptvclone"
+
+cat > "app/src/main/res/values/strings.xml" << 'EOF'
+<resources>
+    <string name="app_name">Iptv Clone</string>
+    <string name="splash_made_by">Made by</string>
+    <string name="splash_brand">ShueibTech</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_reels">Reels</string>
+    <string name="nav_settings">Settings</string>
+    <string name="group_bein">beIN Sports</string>
+    <string name="group_alkass">Alkass</string>
+    <string name="group_alrabiaa">Al Rabia</string>
+    <string name="group_themanyah">Thmanyah</string>
+    <string name="channel_number">%1$s %2$d</string>
+    <string name="tab_all">All</string>
+    <string name="tab_favorites">Favorites</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
+    <string name="cancel">Cancel</string>
+    <string name="favorites_empty">No favorites yet</string>
+</resources>
+EOF
+
+cat > "app/src/main/res/values-ar/strings.xml" << 'EOF'
+<resources>
+    <string name="app_name">Iptv Clone</string>
+    <string name="splash_made_by">صنع بواسطة</string>
+    <string name="splash_brand">ShueibTech</string>
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_reels">ريلز</string>
+    <string name="nav_settings">الإعدادات</string>
+    <string name="group_bein">بي إن سبورت</string>
+    <string name="group_alkass">الكأس</string>
+    <string name="group_alrabiaa">الرابعة</string>
+    <string name="group_themanyah">ثمانية</string>
+    <string name="channel_number">%1$s %2$d</string>
+    <string name="tab_all">الكل</string>
+    <string name="tab_favorites">المفضلة</string>
+    <string name="add_to_favorites">أضف إلى المفضلة</string>
+    <string name="remove_from_favorites">إزالة من المفضلة</string>
+    <string name="cancel">إلغاء</string>
+    <string name="favorites_empty">لا توجد مفضلة بعد</string>
+</resources>
+EOF
+
+cat > "$PKG_DIR/ui/MainScreen.kt" << 'EOF'
+package com.shueibtech.iptvclone.ui
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import com.shueibtech.iptvclone.ui.nav.AppBottomNavBar
+import com.shueibtech.iptvclone.ui.nav.NavDestination
+import com.shueibtech.iptvclone.ui.screens.HomeScreen
+import com.shueibtech.iptvclone.ui.screens.ReelsScreen
+import com.shueibtech.iptvclone.ui.screens.SettingsScreen
+
+@Composable
+fun MainScreen() {
+    var selected by remember { mutableStateOf(NavDestination.Home) }
+    val favorites = remember { mutableStateListOf<String>() }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(
+            targetState = selected,
+            transitionSpec = {
+                fadeIn(tween(220)) togetherWith fadeOut(tween(160))
+            },
+            label = "screenTransition",
+            modifier = Modifier.fillMaxSize()
+        ) { destination ->
+            when (destination) {
+                NavDestination.Home -> HomeScreen(favorites = favorites)
+                NavDestination.Reels -> ReelsScreen()
+                NavDestination.Settings -> SettingsScreen()
+            }
+        }
+
+        AppBottomNavBar(
+            selected = selected,
+            onSelect = { selected = it },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
+}
+EOF
+
+cat > "$PKG_DIR/ui/screens/HomeScreen.kt" << 'EOF'
 package com.shueibtech.iptvclone.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
@@ -439,3 +548,4 @@ private fun FavoriteSheet(
         }
     }
 }
+EOF

@@ -9,6 +9,11 @@
     <string name="group_alkass">Alkass</string>
     <string name="group_alrabiaa">Al Rabia</string>
     <string name="group_themanyah">Thmanyah</string>
-    <string name="home_subtitle">Live channels</string>
     <string name="channel_number">%1$s %2$d</string>
+    <string name="tab_all">All</string>
+    <string name="tab_favorites">Favorites</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove_from_favorites">Remove from Favorites</string>
+    <string name="cancel">Cancel</string>
+    <string name="favorites_empty">No favorites yet</string>
 </resources>
