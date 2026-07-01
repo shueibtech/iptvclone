@@ -45,10 +45,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
-        val controller = WindowInsetsControllerCompat(window, window.decorView)
-        controller.hide(WindowInsetsCompat.Type.systemBars())
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        hideSystemBars()
 
         setContent {
             IptvCloneTheme {
@@ -65,6 +62,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    // لما المستخدم يسحب من الحافة تطلع الأشرطة مؤقت، وبعض الأجهزة ما ترجع تختفي
+    // لحالها. استرجاع الفوكس (بعد السحب أو الرجوع من تطبيق ثاني) هو أفضل نقطة
+    // نعيد فيها الإخفاء تلقائيًا بدون ما يحتاج المستخدم يطلع ويرجع للتطبيق
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemBars()
+        }
+    }
+
+    private fun hideSystemBars() {
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 }
 

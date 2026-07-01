@@ -3,19 +3,22 @@ package com.shueibtech.iptvclone.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -37,12 +40,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -55,10 +55,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -69,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import com.shueibtech.iptvclone.R
 import com.shueibtech.iptvclone.ui.theme.Accent
 import com.shueibtech.iptvclone.ui.theme.Black
+import com.shueibtech.iptvclone.ui.theme.White
 
 private data class ChannelGroup(
     val id: String,
@@ -99,10 +99,10 @@ private val channelGroups = listOf(
 fun HomeScreen(favorites: SnapshotStateList<String>) {
     var selectedTab by remember { mutableStateOf(HomeTab.All) }
     var selectedChannel by remember { mutableStateOf<ChannelInfo?>(null) }
-    var sheetChannel by remember { mutableStateOf<ChannelInfo?>(null) }
+    var contextChannel by remember { mutableStateOf<ChannelInfo?>(null) }
 
     LaunchedEffect(selectedChannel) {
-        if (selectedChannel != null) sheetChannel = selectedChannel
+        if (selectedChannel != null) contextChannel = selectedChannel
     }
 
     val visibleGroups = channelGroups.mapNotNull { group ->
@@ -114,13 +114,23 @@ fun HomeScreen(favorites: SnapshotStateList<String>) {
         if (indices.isEmpty()) null else group to indices
     }
 
+    val backgroundBlur by animateDpAsState(
+        targetValue = if (selectedChannel != null) 22.dp else 0.dp,
+        animationSpec = tween(280),
+        label = "backgroundBlur"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            HomeHeader()
+        // الصفحة الأساسية: تابات ثابتة فوق + شبكة القنوات. تتشوش لما تفتح قائمة المفضلة
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .blur(backgroundBlur)
+        ) {
             HomeTabsRow(selected = selectedTab, onSelect = { selectedTab = it })
 
             Box(
@@ -149,16 +159,17 @@ fun HomeScreen(favorites: SnapshotStateList<String>) {
             }
         }
 
+        // طبقة التعتيم تطلع فوق المحتوى المشوش، تقفل القائمة لو ضغط برّا الكارد
         AnimatedVisibility(
             visible = selectedChannel != null,
-            enter = fadeIn(tween(200)),
-            exit = fadeOut(tween(200)),
+            enter = fadeIn(tween(240)),
+            exit = fadeOut(tween(220)),
             modifier = Modifier.fillMaxSize()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Black.copy(alpha = 0.55f))
+                    .background(Black.copy(alpha = 0.62f))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -167,50 +178,30 @@ fun HomeScreen(favorites: SnapshotStateList<String>) {
             )
         }
 
+        // كارد القناة المكبّر + زر المفضلة، يطلع بنص الشاشة بعيد عن شريط التنقل تحت
         AnimatedVisibility(
             visible = selectedChannel != null,
-            enter = slideInVertically(
-                initialOffsetY = { it },
+            enter = fadeIn(tween(220)) + scaleIn(
+                initialScale = 0.82f,
                 animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium
+                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                    stiffness = Spring.StiffnessLow
                 )
-            ) + fadeIn(tween(150)),
-            exit = slideOutVertically(
-                targetOffsetY = { it },
-                animationSpec = tween(220)
-            ) + fadeOut(tween(150)),
-            modifier = Modifier.align(Alignment.BottomCenter)
+            ),
+            exit = fadeOut(tween(160)) + scaleOut(targetScale = 0.82f, animationSpec = tween(160)),
+            modifier = Modifier.align(Alignment.Center)
         ) {
-            sheetChannel?.let { info ->
-                FavoriteSheetContent(
+            contextChannel?.let { info ->
+                ChannelContextCard(
                     channel = info,
                     isFavorite = favorites.contains(info.key),
                     onToggle = {
                         if (favorites.contains(info.key)) favorites.remove(info.key) else favorites.add(info.key)
                         selectedChannel = null
-                    },
-                    onDismiss = { selectedChannel = null }
+                    }
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun HomeHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 22.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(R.string.home_title),
-            fontSize = 22.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = MaterialTheme.colorScheme.onBackground
-        )
     }
 }
 
@@ -219,8 +210,9 @@ private fun HomeTabsRow(selected: HomeTab, onSelect: (HomeTab) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 20.dp, vertical = 14.dp)
+            .padding(top = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
     ) {
         HomeTab.entries.forEach { tab ->
             val isSelected = tab == selected
@@ -310,6 +302,9 @@ private fun ChannelSection(
 
 @Composable
 private fun SectionHeader(group: ChannelGroup) {
+    val dark = isSystemInDarkTheme()
+    val logoBg = if (dark) Black else White
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -318,7 +313,7 @@ private fun SectionHeader(group: ChannelGroup) {
     ) {
         Surface(
             shape = RoundedCornerShape(7.dp),
-            color = Color.White,
+            color = logoBg,
             modifier = Modifier.size(26.dp)
         ) {
             Image(
@@ -347,6 +342,8 @@ private fun ChannelCard(
     onLongPress: (ChannelInfo) -> Unit
 ) {
     val groupTitle = stringResource(group.titleRes)
+    val dark = isSystemInDarkTheme()
+    val cardBg = if (dark) Black else White
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
@@ -379,10 +376,10 @@ private fun ChannelCard(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(10.dp))
-                .background(Color.White)
+                .background(cardBg)
                 .border(
                     width = 1.dp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f),
                     shape = RoundedCornerShape(10.dp)
                 )
         ) {
@@ -425,122 +422,82 @@ private fun ChannelCard(
 }
 
 @Composable
-private fun FavoriteSheetContent(
+private fun ChannelContextCard(
     channel: ChannelInfo,
     isFavorite: Boolean,
-    onToggle: () -> Unit,
-    onDismiss: () -> Unit
+    onToggle: () -> Unit
 ) {
+    val dark = isSystemInDarkTheme()
+    val logoBg = if (dark) Black else White
     val name = stringResource(R.string.channel_number, stringResource(channel.groupTitleRes), channel.index)
 
-    Surface(
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .fillMaxWidth()
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = {}
-            ),
-        shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp),
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = 20.dp
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 28.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 12.dp)
-                    .align(Alignment.CenterHorizontally)
-                    .width(36.dp)
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
             )
-
-            Row(
+    ) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = logoBg,
+            shadowElevation = 30.dp,
+            border = BorderStroke(1.dp, Accent.copy(alpha = 0.22f)),
+            modifier = Modifier.size(168.dp)
+        ) {
+            Image(
+                painter = painterResource(id = channel.logoRes),
+                contentDescription = null,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 20.dp, end = 12.dp, top = 18.dp, bottom = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.White,
-                    modifier = Modifier.size(46.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = channel.logoRes),
-                        contentDescription = null,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(
-                    text = name,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onDismiss) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = stringResource(R.string.cancel),
-                        tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                    )
-                }
-            }
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.06f))
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            SheetActionRow(
-                icon = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-                iconTint = if (isFavorite) Accent else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                label = stringResource(
-                    if (isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites
-                ),
-                onClick = onToggle
+                    .fillMaxSize()
+                    .padding(28.dp)
             )
         }
-    }
-}
 
-@Composable
-private fun SheetActionRow(
-    icon: ImageVector,
-    iconTint: Color,
-    label: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick
-            )
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconTint,
-            modifier = Modifier.size(22.dp)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
+
         Text(
-            text = label,
-            fontSize = 14.5.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onBackground
+            text = name,
+            fontWeight = FontWeight.Bold,
+            fontSize = 17.sp,
+            color = White
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Surface(
+            shape = RoundedCornerShape(50),
+            color = Accent,
+            modifier = Modifier
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onToggle
+                )
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 26.dp, vertical = 14.dp)
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = null,
+                    tint = Black,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(
+                        if (isFavorite) R.string.remove_from_favorites else R.string.add_to_favorites
+                    ),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Black
+                )
+            }
+        }
     }
 }

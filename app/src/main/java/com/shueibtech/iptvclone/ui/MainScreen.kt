@@ -8,6 +8,7 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,6 +16,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.shueibtech.iptvclone.data.FavoritesStore
 import com.shueibtech.iptvclone.ui.nav.AppBottomNavBar
 import com.shueibtech.iptvclone.ui.nav.NavDestination
 import com.shueibtech.iptvclone.ui.screens.HomeScreen
@@ -24,7 +27,16 @@ import com.shueibtech.iptvclone.ui.screens.SettingsScreen
 @Composable
 fun MainScreen() {
     var selected by remember { mutableStateOf(NavDestination.Home) }
-    val favorites = remember { mutableStateListOf<String>() }
+
+    val context = LocalContext.current
+    val favorites = remember {
+        mutableStateListOf<String>().apply { addAll(FavoritesStore.load(context)) }
+    }
+
+    // يحفظ القائمة في التخزين الدائم كل ما تتغير (إضافة أو إزالة)
+    LaunchedEffect(favorites.toList()) {
+        FavoritesStore.save(context, favorites.toSet())
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedContent(
