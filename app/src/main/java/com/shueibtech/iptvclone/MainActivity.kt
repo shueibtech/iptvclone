@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.shueibtech.iptvclone.data.SettingsStore
 import com.shueibtech.iptvclone.ui.MainScreen
 import com.shueibtech.iptvclone.ui.theme.Accent
 import com.shueibtech.iptvclone.ui.theme.IptvCloneTheme
@@ -46,9 +47,10 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         WindowCompat.setDecorFitsSystemWindows(window, false)
         hideSystemBars()
+        SettingsStore.init(this)
 
         setContent {
-            IptvCloneTheme {
+            IptvCloneTheme(themeMode = SettingsStore.themeMode.value) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -64,9 +66,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // لما المستخدم يسحب من الحافة تطلع الأشرطة مؤقت، وبعض الأجهزة ما ترجع تختفي
-    // لحالها. استرجاع الفوكس (بعد السحب أو الرجوع من تطبيق ثاني) هو أفضل نقطة
-    // نعيد فيها الإخفاء تلقائيًا بدون ما يحتاج المستخدم يطلع ويرجع للتطبيق
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {

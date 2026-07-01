@@ -17,4 +17,17 @@
     <string name="remove_from_favorites">إزالة من المفضلة</string>
     <string name="cancel">إلغاء</string>
     <string name="favorites_empty">لا توجد مفضلة بعد</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="theme_system">افتراضي النظام</string>
+    <string name="theme_light">فاتح</string>
+    <string name="theme_dark">داكن</string>
+    <string name="settings_language">اللغة</string>
+    <string name="lang_english">الإنجليزية</string>
+    <string name="lang_arabic">العربية</string>
+    <string name="settings_general">عام</string>
+    <string name="settings_notifications">الإشعارات</string>
+    <string name="settings_playback_quality">جودة التشغيل</string>
+    <string name="settings_clear_cache">مسح الذاكرة المؤقتة</string>
+    <string name="settings_about">حول التطبيق</string>
+    <string name="settings_version">الإصدار 1.0</string>
 </resources>
